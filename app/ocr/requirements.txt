@@ -1,0 +1,6 @@
+paddlepaddle
+paddle2onnx
+imgaug
+shapely
+pyclipper
+PIL
