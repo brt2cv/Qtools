@@ -5,7 +5,8 @@ import numpy as np
 from PIL import Image
 import pyperclip
 
-from .paddleocr import TextSystem, parse_args
+from .tools.infer.predict_system import TextSystem
+from .tools.infer.utility import parse_args
 from app.screenshot.screenshot import ScreenShotWidget
 
 def pixmap2ndarray(pixmap):
@@ -13,8 +14,8 @@ def pixmap2ndarray(pixmap):
     return np.asarray(img)
 
 class PaddleOcrSnipper(ISnipper, ScreenShotWidget, TextSystem):
-    def __init__(self, *args, **kwargs):
-        self.super(self, ISnipper).__init__(*args, **kwargs)
+    def __init__(self, *args_, **kwargs):
+        super(ISnipper, self).__init__(*args_, **kwargs)
 
         args = parse_args()
         args.use_gpu = False
@@ -23,7 +24,7 @@ class PaddleOcrSnipper(ISnipper, ScreenShotWidget, TextSystem):
         args.cls_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
         args.det_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
         args.rec_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
-        self.super(self, TextSystem).__init__(args)
+        super(TextSystem, self).__init__(args)
 
     # def file2text(self, path_img):
     #     im = cv2.imread(path_img)

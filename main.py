@@ -107,6 +107,7 @@ class TrayIcon(QSystemTrayIcon):
 from importlib import import_module
 import os.path
 import json
+from traceback import print_exc
 
 class MainWindow(QWidget):
     sig_keyhot = pyqtSignal(str)
@@ -139,6 +140,7 @@ class MainWindow(QWidget):
                 self.load_snipper(name, path)
             except Exception as e:
                 logger.error(f"[!] 插件加载失败【{name}: {path}】: {e}")
+                print_exc()
 
     def load_snipper(self, name, path_appdir):
         module = import_module(path_appdir.replace(os.path.sep, "."))
