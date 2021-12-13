@@ -4,9 +4,11 @@
 # @Link    : https://gitee.com/brt2
 
 from core.snipper import ISnipper
-# from .snipper import *
 from .screenshot import ScreenShotWidget
 
+def make_snipper(win):
+    return ScreenShotSnipper(win)
+
 class ScreenShotSnipper(ISnipper, ScreenShotWidget):
-    def __init__(self, *args, **kwargs):
-        super(*args, **kwargs)
+    def run(self):
+        self.take_snapshot()

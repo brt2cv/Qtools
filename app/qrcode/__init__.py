@@ -4,9 +4,6 @@ from PyQt5.QtWidgets import QInputDialog, QMessageBox
 from .qrcode import QrcodeGenerator
 
 class QrcodeSnipper(ISnipper, QrcodeGenerator):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def run(self):
         msg, ok = QInputDialog.getMultiLineText(self._win, 'QRcode Generator', '输入内容', 'https://')
         if not ok and not msg:
