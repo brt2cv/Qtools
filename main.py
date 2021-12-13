@@ -7,6 +7,12 @@ import platform
 from subprocess import call as subp_call
 
 try:
+    from system_hotkey import SystemHotkey
+except Exception as e:
+    print(f"[!] 未能加载模块【SystemHotkey】，将无法启用系统快捷键: {e}")
+    SystemHotkey = None
+
+try:
     from utils.log import getLogger
     print("[+] {}: 启动调试Logger".format(__file__))
     logger = getLogger(0)
@@ -30,7 +36,7 @@ def notify(msg):
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon
 from PyQt5.QtWidgets import QStyle
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtDBus import QDBusConnection
 
 def register_dbus(dbus_obj, serv_name):
@@ -101,14 +107,18 @@ class TrayIcon(QSystemTrayIcon):
 from importlib import import_module
 import os.path
 import json
+from functools import partial
 
 class MainWindow(QWidget):
+    sig_keyhot = pyqtSignal(str)
+
     def __init__(self):
         """ if no ocr-need, pass the None """
         super().__init__()
 
         self.init_snippers()
-        self.setup_ui()
+        self._setup_ui()
+        self._activate()
 
     def init_snippers(self):
         path_curr = os.path.dirname(__file__)
@@ -138,10 +148,12 @@ class MainWindow(QWidget):
     def app_exit(self):
         for snipper in self.dict_snipper.values():
             del snipper
-        self.tray.setVisible(False)
+        self.deleteLater()  # 删除托盘图标，无此操作的话，程序退出后托盘图标不会自动清除
+        # self.tray.setVisible(False)
         QApplication.quit()
 
-    def setup_ui(self):
+
+    def _setup_ui(self):
         from PyQt5.QtWidgets import QAction, QMenu
 
         self.setWindowTitle("DesktopTools")
@@ -150,16 +162,29 @@ class MainWindow(QWidget):
         )
         self.setWindowState(self.windowState() | Qt.WindowFullScreen)
 
+        def hotkey_slot(msg, name):
+            return self.sig_keyhot.emit(name)
+
         menu = QMenu()
         # menu.addAction(QAction("test", self, triggered=lambda: self.tray.make_msg("你好吗")))
         for name, snipper in self.dict_snipper.items():
             menu.addAction(QAction(name, self, triggered=snipper._run))
+            if SystemHotkey is not None:
+                hotkey_test = SystemHotkey()
+                _names = name.split(maxsplit=1)
+                if(len(_names) > 1):
+                    # func = lambda msg: self.sig_keyhot.emit(name)  # lambda延迟绑定，name
+                    func = partial(hotkey_slot, name=name)
+                    str_hotkey = _names[1][1:-1].replace("ctrl", "control")  # system_hotkey库标准命名control,不支持简写
+                    hotkey_test.register(str_hotkey.split("+"), callback=func)
         menu.addAction(QAction("退出", self, triggered=self.app_exit))
 
         self.tray = TrayIcon(self)
         self.tray.setContextMenu(menu)
         self.tray.show()
 
+    def _activate(self):
+        self.sig_keyhot.connect(lambda snipper_name: self.dict_snipper[snipper_name]._run())
 
 #####################################################################
 
