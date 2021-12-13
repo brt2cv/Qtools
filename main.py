@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # @Date    : 2021-12-13
 # @Link    : https://github.com/ianzhao05/textshot
-# @Version : 0.4.0
+# @Version : 0.4.1
 
 import platform
 from subprocess import call as subp_call
@@ -107,7 +107,6 @@ class TrayIcon(QSystemTrayIcon):
 from importlib import import_module
 import os.path
 import json
-from functools import partial
 
 class MainWindow(QWidget):
     sig_keyhot = pyqtSignal(str)
@@ -152,6 +151,9 @@ class MainWindow(QWidget):
         # self.tray.setVisible(False)
         QApplication.quit()
 
+    def hotkey_slot(self, event, hotkey, args):
+        # print(">>>", event, hotkey, args)
+        return self.sig_keyhot.emit(args[0][0])
 
     def _setup_ui(self):
         from PyQt5.QtWidgets import QAction, QMenu
@@ -162,21 +164,18 @@ class MainWindow(QWidget):
         )
         self.setWindowState(self.windowState() | Qt.WindowFullScreen)
 
-        def hotkey_slot(msg, name):
-            return self.sig_keyhot.emit(name)
-
         menu = QMenu()
         # menu.addAction(QAction("test", self, triggered=lambda: self.tray.make_msg("你好吗")))
         for name, snipper in self.dict_snipper.items():
             menu.addAction(QAction(name, self, triggered=snipper._run))
             if SystemHotkey is not None:
-                hotkey_test = SystemHotkey()
+                hotkey_test = SystemHotkey(consumer=self.hotkey_slot)
                 _names = name.split(maxsplit=1)
                 if(len(_names) > 1):
                     # func = lambda msg: self.sig_keyhot.emit(name)  # lambda延迟绑定，name
-                    func = partial(hotkey_slot, name=name)
+                    # func = partial(hotkey_slot, name=name)
                     str_hotkey = _names[1][1:-1].replace("ctrl", "control")  # system_hotkey库标准命名control,不支持简写
-                    hotkey_test.register(str_hotkey.split("+"), callback=func)
+                    hotkey_test.register(str_hotkey.split("+"), name)
         menu.addAction(QAction("退出", self, triggered=self.app_exit))
 
         self.tray = TrayIcon(self)
