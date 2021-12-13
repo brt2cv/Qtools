@@ -98,22 +98,42 @@ class TrayIcon(QSystemTrayIcon):
         self.showMessage("提示", msg, icon)
 
 
+from importlib import import_module
+import os.path
+import json
+
 class MainWindow(QWidget):
     def __init__(self):
         """ if no ocr-need, pass the None """
         super().__init__()
 
-        self.load_snipper()
+        self.init_snippers()
         self.setup_ui()
 
-    def load_snipper(self):
-        self.dict_snipper = {}
+    def init_snippers(self):
+        path_curr = os.path.dirname(__file__)
+        path_appconf = os.path.join(path_curr, ".app.conf")
+        if not os.path.exists(path_appconf):
+            app_conf = {}
+            for entry in os.scandir(os.path.join(path_curr, "app")):
+                if entry.is_dir():
+                    app_conf[entry.name] = os.path.join("app", entry.name)
+            with open(path_appconf, "w") as fp:
+                json.dump(app_conf, fp, ensure_ascii=False, indent=2)
+        else:
+            with open(path_appconf, "r") as fp:
+                app_conf = json.load(fp)
 
-        from app.qrcode import QrcodeSnipper
-        snipper = QrcodeSnipper(win=self)
-        self.dict_snipper = {
-            "qrcode": snipper
-        }
+        self.dict_snipper = {}
+        for name, path in app_conf.items():
+            try:
+                self.load_snipper(name, path)
+            except Exception as e:
+                logger.error(f"[!] 插件加载失败【{name}: {path}】: {e}")
+
+    def load_snipper(self, name, path_appdir):
+        module = import_module(path_appdir.replace(os.path.sep, "."))
+        self.dict_snipper[name] = module.make_snipper(self)
 
     def app_exit(self):
         for snipper in self.dict_snipper.values():
@@ -133,7 +153,7 @@ class MainWindow(QWidget):
         menu = QMenu()
         menu.addAction(QAction("test", self, triggered=lambda: self.tray.make_msg("你好吗")))
         for name, snipper in self.dict_snipper.items():
-            menu.addAction(QAction(name, self, triggered=snipper.run))
+            menu.addAction(QAction(name, self, triggered=snipper._run))
         menu.addAction(QAction("退出", self, triggered=self.app_exit))
 
         self.tray = TrayIcon(self)

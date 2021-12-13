@@ -1,3 +1,5 @@
+.app.conf
+
 **/ui/*[!*.ui]
 **/.vscode/*[!demo/]
 
