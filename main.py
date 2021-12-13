@@ -151,7 +151,7 @@ class MainWindow(QWidget):
         self.setWindowState(self.windowState() | Qt.WindowFullScreen)
 
         menu = QMenu()
-        menu.addAction(QAction("test", self, triggered=lambda: self.tray.make_msg("你好吗")))
+        # menu.addAction(QAction("test", self, triggered=lambda: self.tray.make_msg("你好吗")))
         for name, snipper in self.dict_snipper.items():
             menu.addAction(QAction(name, self, triggered=snipper._run))
         menu.addAction(QAction("退出", self, triggered=self.app_exit))
