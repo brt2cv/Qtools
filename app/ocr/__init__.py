@@ -26,9 +26,13 @@ class PaddleOcrSnipper(ISnipper, ScreenShotWidget):
     def init_ocr_engine(self):
         args = parse_args()
         args.use_gpu = False
+        args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_det_infer")
+        if not os.path.exists(args.det_model_dir):
+            args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
+        args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_rec_infer")
+        if not os.path.exists(args.rec_model_dir):
+            args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
         args.cls_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
-        args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
-        args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
         args.rec_char_dict_path = rpath("ppocr/utils/ppocr_keys_v1.txt")
         self.ocr_engine = TextSystem(args)
 
