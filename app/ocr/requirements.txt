@@ -3,4 +3,5 @@ paddle2onnx
 imgaug
 shapely
 pyclipper
-PIL
+pillow
+opencv-python
