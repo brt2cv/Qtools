@@ -34,7 +34,7 @@ class ScreenShotWidget(QWidget):
         self.update()
 
         QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
-        self.start, self.end = QtCore.QPoint(), QtCore.QPoint()
+        self.start, self.end = None, None  # QtCore.QPoint() == QtCore.QPoint(0,0)
         self.show()
 
     def keyPressEvent(self, event):
@@ -72,11 +72,12 @@ class ScreenShotWidget(QWidget):
             self.close()  # 右键关闭当前绘图窗口
         elif self.snapshot is not None:
             self.start = self.end = event.pos()
+            # if self.start.isNull():  # 错误
             self.update()
         return super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.snapshot and not self.start.isNull():
+        if self.snapshot and self.start is not None:
             self.end = event.pos()
             self.update()
         return super().mousePressEvent(event)
@@ -85,8 +86,9 @@ class ScreenShotWidget(QWidget):
         if self.snapshot is not None:
             if self.start == self.end:
                 self.snapshot = None
-                # return super().mouseReleaseEvent(event)
                 self.close()
+                return super().mouseReleaseEvent(event)
+
             self.hide()
             QApplication.processEvents()  # 耗时任务防止假死
             im_pixmap = self.snapshot.copy(QtCore.QRect(self.start, self.end))
