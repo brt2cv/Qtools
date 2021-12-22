@@ -1,33 +1,58 @@
 #!/usr/bin/env python3
-# @Date    : 2021-12-07
+# @Date    : 2021-12-22
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
 
 # 参考: https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.3/paddleocr.py
 # 模型下载: https://github.com/brt2cv/kaggle/releases/download/PP-OCRv2.1/models.7z
 
-from tools.infer.predict_system import TextSystem
-from tools.infer.utility import parse_args
+import os.path
+
+if __name__ == "__main__":
+    from tools.infer.predict_system import TextSystem
+    from tools.infer.utility import parse_args
+else:
+    from .tools.infer.predict_system import TextSystem
+    from .tools.infer.utility import parse_args
+
+class OCR_Engine:
+    def __init__(self):
+        # version 2.1
+        args = parse_args()
+
+        args.use_gpu = False
+        dir_curr = os.path.dirname(__file__)
+
+        def rpath(rpath):
+            return os.path.join(dir_curr, rpath)
+
+        args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_det_infer")
+        if not os.path.exists(args.det_model_dir):
+            args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
+        args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_rec_infer")
+        if not os.path.exists(args.rec_model_dir):
+            args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
+        args.cls_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
+        args.rec_char_dict_path = rpath("ppocr/utils/ppocr_keys_v1.txt")
+
+        self.engine = TextSystem(args)
+
+    def img2text(self, im, print_score=False):
+        """ return a list of strings of OCR """
+        result = self.engine(im)  # det & rec
+        if result is None:
+            return []
+        if print_score:
+            dt_box, tuple_rec = result
+            for text, score in tuple_rec:
+                # print(text)
+                print(f"[{score:.2f}] {text}")
+        return [i[0] for i in result[1]]
 
 
 if __name__ == "__main__":
-    import os.path
     import cv2
 
-    # version 2.1
-    args = parse_args()
-
-    args.use_gpu = False
-    dir_curr = os.path.dirname(__file__)
-    args.cls_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
-    args.det_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
-    args.rec_model_dir = os.path.join(dir_curr, "models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
-
-    engine = TextSystem(args)
-    im = cv2.imread("test.jpg")
-    result = engine(im)  # det & rec
-    if result is not None:
-        dt_box, tuple_rec = result
-        for text, score in tuple_rec:
-            # print(text)
-            print(f"[{score:.2f}] {text}")
+    ocr = OCR_Engine()
+    list_text = ocr.img2text(cv2.imread("tmp/test.jpg"))
+    print(">>>", list_text)
