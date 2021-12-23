@@ -8,9 +8,11 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
 from app.ocr.api import router as ocr
+from app.facerec.api import app as facerec
 
 app = FastAPI(version="1.0.2")
 app.include_router(ocr)
+app.include_router(facerec)
 
 @app.get("/index")
 def welcome():
@@ -29,4 +31,9 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     # uvicorn.run(app, host="0.0.0.0", port=1313)
-    uvicorn.run("api:app", host="0.0.0.0", port=1313)  # reload=True
+    uvicorn.run(
+        "api:app",
+        host="0.0.0.0",
+        port=1313,
+        reload=True,
+    )
