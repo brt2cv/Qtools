@@ -15,25 +15,31 @@ else:
     from .tools.infer.predict_system import TextSystem
     from .tools.infer.utility import parse_args
 
+dir_curr = os.path.dirname(__file__)
+def rpath(rpath):
+    return os.path.join(dir_curr, rpath)
+
 class OCR_Engine:
+    ocr_det_model_server = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_det_infer")
+    ocr_det_model_mobile = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
+    ocr_rec_model_server = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_rec_infer")
+    ocr_rec_model_mobile = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
+    ocr_cls_model = rpath("models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
+    rec_char_dict = rpath("ppocr/utils/ppocr_keys_v1.txt")
+
     def __init__(self):
         # version 2.1
         args = parse_args()
 
         args.use_gpu = False
-        dir_curr = os.path.dirname(__file__)
-
-        def rpath(rpath):
-            return os.path.join(dir_curr, rpath)
-
-        args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_det_infer")
+        args.det_model_dir = self.ocr_det_model_server
         if not os.path.exists(args.det_model_dir):
-            args.det_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_det_infer")
-        args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_server_v2.0_rec_infer")
+            args.det_model_dir = self.ocr_det_model_mobile
+        args.rec_model_dir = self.ocr_rec_model_server
         if not os.path.exists(args.rec_model_dir):
-            args.rec_model_dir = rpath("models/ch_PP-OCRv2/ch_PP-OCRv2_rec_infer")
-        args.cls_model_dir = rpath("models/ch_PP-OCRv2/ch_ppocr_mobile_v2.0_cls_infer")
-        args.rec_char_dict_path = rpath("ppocr/utils/ppocr_keys_v1.txt")
+            args.rec_model_dir = self.ocr_rec_model_mobile
+        args.cls_model_dir = self.ocr_cls_model
+        args.rec_char_dict_path = self.rec_char_dict
 
         self.engine = TextSystem(args)
 

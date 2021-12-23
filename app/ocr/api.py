@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# @Date    : 2021-12-22
+# @Date    : 2021-12-23
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
-# @Version : v0.1.0
+# @Version : v0.1.1
 
-import io
 from fastapi import APIRouter
 from fastapi import File, UploadFile
 
@@ -12,14 +11,16 @@ router = APIRouter(prefix="/ocr")
 
 #####################################################################
 from .paddleocr import OCR_Engine
+import util
 # from imageio import imread as imread_bytes
-import cv2
-import numpy as np
 
-def imread_bytes(bytes_img):
-    return cv2.imdecode(np.frombuffer(bytes_img, np.uint8), cv2.IMREAD_COLOR)
+engine = None
+def get_engine():
+    global engine
 
-OCR = OCR_Engine()
+    if engine is None:
+        engine = OCR_Engine()
+    return engine
 
 @router.post("/")
 async def img2text(image: UploadFile=File(...)):
@@ -27,5 +28,5 @@ async def img2text(image: UploadFile=File(...)):
     bytes_img = await image.read()
     # np.fromstring(bytes_img, "unit8").reshape()
     # imageio.imread(io.BytesIO(bytes_img))
-    im = imread_bytes(bytes_img)
-    return OCR.img2text(im)
+    im = util.bytes_img(bytes_img)
+    return get_engine().img2text(im)
