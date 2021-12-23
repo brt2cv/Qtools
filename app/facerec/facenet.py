@@ -2,7 +2,7 @@
 # @Date    : 2021-12-23
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
-# @Version : v0.1.0
+# @Version : v0.1.1
 
 import os
 
@@ -120,14 +120,39 @@ def draw_faces(img, names, boxes):
         img = add_text(img, name, corpbbox[0], corpbbox[1] -15, color=(0, 0, 255), size=12)
     return img
 
+def getopt():
+    import argparse
 
-if __name__ == "__main__":
-    predictor = FaceRecognizer()
-    img = cv2.imread("MobileFaceNet/dataset/test.jpg")
-    # img = cv2.imread("../ocr/tmp/test.jpg")
+    parser = argparse.ArgumentParser("MobileFaceNet", description="人脸识别程序")
+    parser.add_argument("-c", "--camera_as_input", action="store_true", help="使用摄像头")
+    return parser.parse_args()
+
+# copy from: ipynb/OCR/opencv_ocr.py
+kWinName = "EAST: An Efficient and Accurate Scene Text Detector"
+def faces_recognize(img):
     names, boxes = predictor.recognize(img)
     logger.info(f"结果: names: {names}\nboxes: {boxes}")
-
     img = draw_faces(img, names, boxes)
-    cv2.imshow("FaceRecognizer", img)
-    cv2.waitKey(0)
+    cv2.imshow(kWinName, img)
+
+
+if __name__ == "__main__":
+    args = getopt()
+
+    predictor = FaceRecognizer()
+    if args.camera_as_input:
+        cv2.namedWindow(kWinName, cv2.WINDOW_NORMAL)
+
+        cap = cv2.VideoCapture(0)
+        while cv2.waitKey(1) < 0:
+            # Read frame
+            hasFrame, img = cap.read()
+            if not hasFrame:
+                cv2.waitKey()
+                break
+            faces_recognize(img)
+    else:
+        img = cv2.imread("MobileFaceNet/dataset/test.jpg")
+        # img = cv2.imread("../ocr/tmp/test.jpg")
+        faces_recognize(img)
+        cv2.waitKey(0)
