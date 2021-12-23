@@ -1,0 +1,3 @@
+[submodule "app/facerec/MobileFaceNet"]
+	path = app/facerec/MobileFaceNet
+	url = https://github.com/yeyupiaoling/PaddlePaddle-MobileFaceNets.git
