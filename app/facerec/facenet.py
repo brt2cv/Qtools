@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
-# @Date    : 2021-12-23
+# @Date    : 2021-12-30
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
-# @Version : v0.1.1
-
-import os
+# @Version : v0.1.2
 
 import numpy as np
 import cv2
 import paddle
 from loguru import logger
 
-if __name__ == "__main__":
-    from MobileFaceNet.detection.face_detect import MTCNN
-else:
-    from .MobileFaceNet.detection.face_detect import MTCNN
-
+import os, sys
 dir_curr = os.path.dirname(__file__)
+
+if dir_curr not in sys.path:  # os.environ["path"]:
+    sys.path.append(dir_curr)
+from MobileFaceNet.detection.face_detect import MTCNN
+
 def rpath(rpath):
     return os.path.join(dir_curr, rpath)
 

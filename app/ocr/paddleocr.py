@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
-# @Date    : 2021-12-22
+# @Date    : 2021-12-30
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
 
 # 参考: https://github.com/PaddlePaddle/PaddleOCR/blob/release/2.3/paddleocr.py
 # 模型下载: https://github.com/brt2cv/kaggle/releases/download/PP-OCRv2.1/models.7z
 
-import os.path
-
-if __name__ == "__main__":
-    from tools.infer.predict_system import TextSystem
-    from tools.infer.utility import parse_args
-else:
-    from .tools.infer.predict_system import TextSystem
-    from .tools.infer.utility import parse_args
-
+import sys, os.path
 dir_curr = os.path.dirname(__file__)
+
+if dir_curr not in sys.path:  # os.environ["path"]:
+    sys.path.append(dir_curr)
+from tools.infer.predict_system import TextSystem
+from tools.infer.utility import parse_args
+
 def rpath(rpath):
     return os.path.join(dir_curr, rpath)
 

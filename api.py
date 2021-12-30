@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
-# @Date    : 2021-12-22
+# @Date    : 2021-12-30
 # @Author  : Bright (brt2@qq.com)
 # @Link    : https://gitee.com/brt2
-# @Version : v0.1.0
-
-import consul
-import uuid
-_c = consul.Consul(host="127.0.0.1", port=8500)
-service = _c.agent.service
-serv_id = "QTools by FastAPI"
-service.register(
-    name="QTools"
-    , address="127.0.0.1"
-    , port=8000
-    , service_id=serv_id
-)
+# @Version : v0.1.1
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
@@ -40,18 +28,34 @@ def root():
     """ 暂时使用/test调用功能 """
     return RedirectResponse("/test")
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    service.deregister(serv_id)
-    print(">>> 退出FastAPI，已从Consul解注册！")
+try:
+    import consul
+
+    _c = consul.Consul(host="127.0.0.1", port=8500)
+    service = _c.agent.service
+    serv_id = "QTools_by_FastAPI"
+    service.register(
+        name="QTools"
+        , address="127.0.0.1"
+        , port=8510
+        , service_id=serv_id
+    )
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        service.deregister(serv_id)
+        print(">>> 退出FastAPI，已从Consul解注册！")
+
+except Exception:
+    service = None
 
 
 if __name__ == "__main__":
     import uvicorn
-    # uvicorn.run(app, host="0.0.0.0", port=1313)
+    # uvicorn.run(app, host="0.0.0.0", port=1314)
     uvicorn.run(
         "api:app",
         host="0.0.0.0",
-        port=1313,
+        port=1314,
         reload=True,
     )
